@@ -1,8 +1,9 @@
 var express      = require("express");
 var fileuploader = require("express-fileupload");
-require("dotenv").config();
 const cors = require("cors");
-
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 var tailorRouter   = require("./routers/TailorRouter");
 var userRouter     = require("./routers/UserRouter");
 var customerRouter = require("./routers/CustomerRouter");
