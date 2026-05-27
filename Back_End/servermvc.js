@@ -10,7 +10,6 @@ var customerRouter = require("./routers/CustomerRouter");
 var reviewRouter   = require("./routers/Reviewtailorrouter");
 
 var { connectToMongoDB } = require("./config/dbconnect");
-var cloudinary = require("./config/cloudinary"); 
 
 var app = express();
 
