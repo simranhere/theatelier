@@ -103,7 +103,7 @@ export default function RateAndReview() {
   function fetchTailorByMobile(mobile: string) {
     setIsFinding(true);
     setTailorInfo(null);
-    axios.post("http://localhost:2007/review/find-tailor-by-mobile", { mobile })
+    axios.post("https://the-atelier-phi.vercel.app/review/find-tailor-by-mobile", { mobile })
       .then((resp) => {
         if (resp.data.status) {
           setTailorInfo(resp.data.doc);
@@ -128,7 +128,7 @@ export default function RateAndReview() {
       return;
     }
     setIsSubmitting(true);
-    axios.post("http://localhost:2007/review/save-review", form)
+    axios.post("https://the-atelier-phi.vercel.app/review/save-review", form)
       .then((resp) => {
         if (resp.data.status) {
           setSubmitSuccess(true);

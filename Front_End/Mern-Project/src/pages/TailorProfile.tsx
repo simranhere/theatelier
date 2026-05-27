@@ -243,8 +243,8 @@ export default function ProfileTailor() {
     }
 
     let url = isEditing
-      ? "http://localhost:2007/tailor/update-tailor-profile"
-      : "http://localhost:2007/tailor/save-tailor-profile";
+      ? "https://the-atelier-phi.vercel.app/tailor/update-tailor-profile"
+      : "https://the-atelier-phi.vercel.app/tailor/save-tailor-profile";
 
     let fd = new FormData();
     Object.entries(form).forEach(([k, v]) => {
@@ -272,7 +272,7 @@ export default function ProfileTailor() {
     }
 
     try {
-      let resp = await axios.post("http://localhost:2007/tailor/find-tailor", { emailid: form.emailid });
+      let resp = await axios.post("https://the-atelier-phi.vercel.app/tailor/find-tailor", { emailid: form.emailid });
       if (resp.data.status) {
         const doc = resp.data.doc;
         if (doc.dob && doc.dob.includes("T")) doc.dob = doc.dob.split("T")[0];
@@ -302,7 +302,7 @@ export default function ProfileTailor() {
     fd.append("aadharcard", file);
 
     try {
-      let resp = await axios.post("http://localhost:2007/tailor/extract-aadhaar", fd, {
+      let resp = await axios.post("https://the-atelier-phi.vercel.app/tailor/extract-aadhaar", fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

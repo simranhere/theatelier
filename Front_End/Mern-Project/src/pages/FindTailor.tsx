@@ -2,7 +2,7 @@
 // FindTailor.tsx
 // A React + TypeScript page that lets users search for tailors by city,
 // category (Men/Women/Children/Both), and dress type (specialty).
-// It fetches data from a Node.js/Express backend running at localhost:2007.
+// It fetches data from a Node.js/Express backend running at the-atelier-phi.vercel.app.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ─── React Hooks ───
@@ -64,7 +64,7 @@ const CATEGORIES = [
 ];
 
 // Base URL for all API calls. Change this one string to point to production.
-const BASE = "http://localhost:2007/tailor";
+const BASE = "https://the-atelier-phi.vercel.app/tailor";
 
 // How many tailor cards to show per page in the results grid.
 const PAGE_SIZE = 6;

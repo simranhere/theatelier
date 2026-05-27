@@ -63,4 +63,7 @@ app.use((req, res) => {
     msg:    "Invalid URL",
   });
 });
+app.get("/", (req, res) => {
+  res.send("Backend running successfully");
+});
 module.exports = app;
