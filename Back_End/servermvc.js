@@ -17,7 +17,8 @@ var app = express();
 app.use(
   cors({
     origin: [
-      process.env.FRONTEND_URL || "http://localhost:3000",
+      "https://theatelier-56tl.vercel.app",
+      "http://localhost:3000"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
