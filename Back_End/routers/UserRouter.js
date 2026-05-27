@@ -1,4 +1,4 @@
-var userController = require("../controllers/UserController");
+var userController = require("../controllers/userController");
 var app = require("express");
 var {validateTokenn2} = require("../config/validate")
 var router = app.Router();

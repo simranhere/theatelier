@@ -1,4 +1,4 @@
-var customerController = require("../controllers/CustomerController");
+var customerController = require("../controllers/customerController");
 var app = require("express");
 var router = app.Router();
 
