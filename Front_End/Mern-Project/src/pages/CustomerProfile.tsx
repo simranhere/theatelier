@@ -138,8 +138,8 @@ export default function CustomerProfile() {
     }
 
     const url = isNew
-      ? "https://the-atelier-phi.vercel.app/customer/save-customer-profile"
-      : "https://the-atelier-phi.vercel.app/customer/update-customer-profile";
+      ? "https://theatelier-wheat.vercel.app/customer/save-customer-profile"
+      : "https://theatelier-wheat.vercel.app/customer/update-customer-profile";
 
     // Backend reads req.body + req.files, so multipart FormData
     const fd = new FormData();

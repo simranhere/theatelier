@@ -49,7 +49,7 @@ export default function Signup() {
       return;
     }
 
-    axios.post("https://the-atelier-phi.vercel.app/user/signup", form)
+    axios.post("https://theatelier-wheat.vercel.app/user/signup", form)
       .then((response) => {
         if (response.data.status) {
           setServerMessage("Signup successful. Redirecting to login...");

@@ -64,7 +64,7 @@ const CATEGORIES = [
 ];
 
 // Base URL for all API calls. Change this one string to point to production.
-const BASE = "https://the-atelier-phi.vercel.app/tailor";
+const BASE = "https://theatelier-wheat.vercel.app/tailor";
 
 // How many tailor cards to show per page in the results grid.
 const PAGE_SIZE = 6;

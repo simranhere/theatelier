@@ -99,7 +99,7 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       const resp = await axios.post(
-        "https://the-atelier-phi.vercel.app/user/login",
+        "https://theatelier-wheat.vercel.app/user/login",
         { emailid: form.emailid.trim(), pwd: form.pwd },
         { headers: { "Content-Type": "application/json" } }
       );
