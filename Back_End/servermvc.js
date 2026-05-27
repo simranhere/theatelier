@@ -45,25 +45,24 @@ app.use("/review",   reviewRouter);
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
-    time:   new Date().toISOString(),
+    time: new Date().toISOString(),
   });
 });
 
-// ── Start Server ───────────────────────────────────────
-const PORT = process.env.PORT || 2007;
-app.listen(PORT, () => {
-  console.log(` Server started on port: ${PORT}`);
+// ── Root Route ─────────────────────────────────────────
+app.get("/", (req, res) => {
+  res.send("Backend running successfully");
 });
 
 // ── 404 Handler (Always Last) ──────────────────────────
 app.use((req, res) => {
   console.log("404 ->", req.method, req.url);
+
   res.status(404).json({
     status: false,
-    msg:    "Invalid URL",
+    msg: "Invalid URL",
   });
 });
-app.get("/", (req, res) => {
-  res.send("Backend running successfully");
-});
+
+// ── Export App For Vercel ──────────────────────────────
 module.exports = app;
