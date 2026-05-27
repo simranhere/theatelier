@@ -234,8 +234,8 @@ export default function Login() {
 
         <p className="text-center mt-5 text-sm text-[#6B5B3E]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
           New here?{" "}
-          <Link to="/login" className="text-[#A8843C] font-semibold hover:underline">
-            Sign in
+          <Link to="/signup" className="text-[#A8843C] font-semibold hover:underline">
+            Create an account
           </Link>
         </p>
 
