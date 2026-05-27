@@ -4,7 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import api from "./api";
-
+import { Link } from "react-router-dom";
 interface LoginFormState {
   emailid: string;
   pwd: string;
@@ -126,7 +126,7 @@ export default function Login() {
         setUserType(user.utype);
         setServerMessage("Login successful. Redirecting...");
 
-       
+
         setTimeout(() => redirectByRole(user.utype), 1200);
       } else {
         setServerMessage(resp.data.msg || "Invalid credentials");
@@ -234,9 +234,9 @@ export default function Login() {
 
         <p className="text-center mt-5 text-sm text-[#6B5B3E]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
           New here?{" "}
-          <a href="/signup" className="text-[#A8843C] font-semibold hover:underline">
-            Create an account
-          </a>
+          <Link to="/login" className="text-[#A8843C] font-semibold hover:underline">
+            Sign in
+          </Link>
         </p>
 
         {userType && (

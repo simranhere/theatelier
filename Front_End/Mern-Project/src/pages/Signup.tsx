@@ -7,7 +7,7 @@ import atelierBg from "../assets/atelier.png";
 import customerImg from "../assets/customer.png";
 import tailorImg from "../assets/tailor.png";
 import adminImg from "../assets/admin.png";
-
+import { Link } from "react-router-dom";
 interface SignupFormState {
   emailid: string;
   pwd: string;
@@ -53,7 +53,7 @@ export default function Signup() {
       .then((response) => {
         if (response.data.status) {
           setServerMessage("Signup successful. Redirecting to login...");
-          setTimeout(() => navigate("/login"), 1500); 
+          setTimeout(() => navigate("/login"), 1500);
         } else {
           setServerMessage(response.data.msg);
         }
@@ -65,7 +65,7 @@ export default function Signup() {
 
   const leftImage =
     form.utype === "Customer" ? customerImg :
-    form.utype === "Tailor" ? tailorImg : adminImg;
+      form.utype === "Tailor" ? tailorImg : adminImg;
 
   return (
     <div
@@ -112,9 +112,8 @@ export default function Signup() {
               value={form.emailid}
               onChange={handleChange}
               onBlur={() => setTouched({ ...touched, emailid: true })}
-              className={`w-full px-4 py-3 rounded-lg bg-[#F8F3E8] border ${
-                touched.emailid && !emailValid ? "border-red-500" : "border-[#D6C7A8]"
-              }`}
+              className={`w-full px-4 py-3 rounded-lg bg-[#F8F3E8] border ${touched.emailid && !emailValid ? "border-red-500" : "border-[#D6C7A8]"
+                }`}
             />
             {touched.emailid && !emailValid && (
               <p className="text-red-500 text-sm mt-1">Enter a valid email address.</p>
@@ -158,9 +157,8 @@ export default function Signup() {
               value={form.utype}
               onChange={handleChange}
               onBlur={() => setTouched({ ...touched, utype: true })}
-              className={`w-full px-4 py-3 rounded-lg bg-[#F8F3E8] border ${
-                touched.utype && !userTypeValid ? "border-red-500" : "border-[#D6C7A8]"
-              }`}
+              className={`w-full px-4 py-3 rounded-lg bg-[#F8F3E8] border ${touched.utype && !userTypeValid ? "border-red-500" : "border-[#D6C7A8]"
+                }`}
             >
               <option value="">Select User Type</option>
               <option value="Customer">Customer</option>
@@ -190,7 +188,9 @@ export default function Signup() {
 
           <p className="text-center mt-5 text-sm text-[#6B5B3E]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             Already have an account?{" "}
-            <a href="/login" className="text-[#A8843C] font-semibold hover:underline">Sign in</a>
+            <Link to="/signup" className="text-[#A8843C] font-semibold hover:underline">
+              Create an account
+            </Link>
           </p>
         </motion.div>
       </div>
