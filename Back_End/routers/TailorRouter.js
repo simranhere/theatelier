@@ -15,7 +15,7 @@ var {
   doGetCities,
   doGetSpecialties,
   doFindTailors,
-} = require("../controllers/FindTailorcontroller");
+} = require("../controllers/FindTailorController");
 
 // ── Existing routes ──────────────────────────────────────────
 router.post("/save-tailor-profile",   doSaveProfile);

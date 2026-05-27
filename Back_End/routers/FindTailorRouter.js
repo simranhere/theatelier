@@ -13,7 +13,7 @@ var {
   doGetCities,
   doGetSpecialties,
   doFindTailors,
-} = require("../controllers/FindTailorcontroller");
+} = require("../controllers/FindTailorController");
 
 router.post("/save-tailor-profile", doSaveProfile);
 router.post("/update-tailor-profile", doUpdateProfile);

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://the-atelier-phi.vercel.app",
+  baseURL: "https://",
 });
 
 api.interceptors.request.use((config) => {
