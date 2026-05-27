@@ -1,101 +1,64 @@
 var UserColRef = require("../models/model_user");
-var sendEmail = require("../utils/sendEmail");
-var jwt = require("jsonwebtoken");
+var sendEmail  = require("../utils/sendEmail");
+var jwt        = require("jsonwebtoken");
+
 function doSignup(req, resp) {
-    console.log(req.body);
-    
-    let objUserColRef = new UserColRef(req.body);
+  console.log(req.body);
 
-    objUserColRef.save()
-        .then((doc) => {
+  let objUserColRef = new UserColRef(req.body);
 
-            // Send welcome email after successful save
-            return sendEmail(
-                doc.emailid,
-                "Welcome to The Atelier",`
-                <h2></h2>
-                <p>Your bespoke journey begins now.</p>`
-            ).then(() => doc);
-
-        })
-        .then((doc) => {
-
-            console.log(doc);
-
-            resp.status(200).json({
-                status: true,
-                msg: "User registered successfully & email sent",
-                doc: doc
-            });
-
-        })
-        .catch((err) => {
-            console.log(err.message);
-
-            resp.status(500).json({
-                status: false,
-                msg: err.message
-            });
-        });
+  objUserColRef.save()
+    .then((doc) => {
+      return sendEmail(
+        doc.emailid,
+        "Welcome to The Atelier",
+        `<h2></h2><p>Your bespoke journey begins now.</p>`
+      ).then(() => doc);
+    })
+    .then((doc) => {
+      resp.status(200).json({ status: true, msg: "User registered successfully & email sent", doc: doc });
+    })
+    .catch((err) => {
+      resp.status(500).json({ status: false, msg: err.message });
+    });
 }
 
 function doLogin(req, resp) {
-    UserColRef.findOne({ 
-        emailid: req.body.emailid, 
-        pwd: req.body.pwd 
-    })
+  UserColRef.findOne({ emailid: req.body.emailid, pwd: req.body.pwd })
     .then((doc) => {
+      if (doc != null) {
+        if (doc.status == true) {
+          let token = jwt.sign(
+            { emailid: req.body.emailid },
+            process.env.SEC_KEY,
+            { expiresIn: "7d" }
+          );
 
-        if (doc != null) {
-
-            if (doc.status == true) {
-
-                // CREATE JWT TOKEN
-                let token = jwt.sign({ emailid: req.body.emailid },   // payload
-                    process.env.SEC_KEY, // secret key
-                    { expiresIn: "1m" }  // expiry
-                );
-                console.log(token);
-
-                resp.status(200).json({
-                    status: true,
-                    msg: "Login successful",
-                    doc: doc,
-                    token: token   //  send token
-                });
-
-            } else {
-                resp.status(200).json({
-                    status: false,
-                    msg: "Account is deactivated"
-                });
-            }
+          resp.status(200).json({ status: true, msg: "Login successful", doc: doc, token: token });
 
         } else {
-            resp.status(200).json({
-                status: false,
-                msg: "Invalid credentials"
-            });
+          resp.status(200).json({ status: false, msg: "Account is deactivated" });
         }
-
+      } else {
+        resp.status(200).json({ status: false, msg: "Invalid credentials" });
+      }
     })
     .catch((err) => {
-        resp.status(500).json({
-            status: false,
-            msg: err.message
-        });
+      resp.status(500).json({ status: false, msg: err.message });
     });
 }
 
 function doFindUser(req, resp) {
-    UserColRef.findOne({ emailid: req.body.emailid }).then((doc) => {
-        if (doc != null)
-            resp.status(200).json({ status: true, doc: doc })
-        else
-            resp.status(200).json({ status: false, msg: "Invalid User" })
-    }).catch((err) => {
-        resp.status(200).json({ status: false, msg: err.message })
+  UserColRef.findOne({ emailid: req.body.emailid })
+    .then((doc) => {
+      if (doc != null)
+        resp.status(200).json({ status: true, doc: doc });
+      else
+        resp.status(200).json({ status: false, msg: "Invalid User" });
     })
+    .catch((err) => {
+      resp.status(200).json({ status: false, msg: err.message });
+    });
 }
 
-module.exports = { doSignup, doLogin, doFindUser }
+module.exports = { doSignup, doLogin, doFindUser };

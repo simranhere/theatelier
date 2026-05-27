@@ -4,7 +4,7 @@ async function connectToMongoDB() {
     try {
 
         const url =
-        "mongodb+srv://PrabhsimranSingh:prabh123%40@cluster0.1bz8rt5.mongodb.net/Balaji_Project?retryWrites=true&w=majority";
+        process.env.MONGODB_URL;
 
         await mongoose.connect(url);
 

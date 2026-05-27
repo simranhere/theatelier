@@ -1,225 +1,134 @@
-var path = require("path");
 var TailorColRef = require("../models/model_tailor");
+var cloudinary   = require("../config/config"); // ← already configured
+const Tesseract  = require("tesseract.js");
 
-// Cloudinary
-const cloudinary = require("cloudinary").v2;
-var { cloudObj } = require("../config/config");
-cloudinary.config(cloudObj);
-
-// OCR
-const Tesseract = require("tesseract.js");
-
-// ─────────────────────────────────────────────────────────────
-// SAVE PROFILE
-// ─────────────────────────────────────────────────────────────
-
+// ── SAVE PROFILE ────────────────────────────────────────
 function doSaveProfile(req, resp) {
 
-    TailorColRef.findOne({ emailid: req.body.emailid }).then((existing) => {
+  TailorColRef.findOne({ emailid: req.body.emailid }).then((existing) => {
 
-        if (existing != null) {
-            return resp.status(200).json({ status: false, msg: "Email already registered" });
-        }
+    if (existing != null)
+      return resp.status(200).json({ status: false, msg: "Email already registered" });
 
-        let picPromise = Promise.resolve("nopic.jpg"); // Default if no file
-        if (req.files && req.files.profilepic) {
-            let fileName = req.files.profilepic.name;
-            let uploadsFolderPath = path.join(__dirname, "..", "uploads", fileName);
+    //  Upload directly from /tmp — no local uploads/ folder needed
+    let picPromise = Promise.resolve("nopic.jpg");
+    if (req.files && req.files.profilepic) {
+      picPromise = cloudinary.uploader.upload(req.files.profilepic.tempFilePath, {
+        resource_type: "auto",
+        folder: "tailor-profiles",
+      }).then((r) => r.secure_url);
+    }
 
-            req.files.profilepic.mv(uploadsFolderPath);
+    let aadharPromise = Promise.resolve("");
+    if (req.files && req.files.aadharcard) {
+      aadharPromise = cloudinary.uploader.upload(req.files.aadharcard.tempFilePath, {
+        resource_type: "auto",
+        folder: "tailor-aadhar",
+      }).then((r) => r.secure_url);
+    }
 
-            picPromise = cloudinary.uploader.upload(uploadsFolderPath).then(function (picUrlResult) {
-                return picUrlResult.url;
-            });
-        }
+    Promise.all([picPromise, aadharPromise]).then((results) => {
+      req.body.profilepic = results[0];
+      req.body.aadharcard = results[1];
 
-        let aadharPromise = Promise.resolve(""); // Default if no file
-        if (req.files && req.files.aadharcard) {
-            let fileName = req.files.aadharcard.name;
-            let uploadsFolderPath = path.join(__dirname, "..", "uploads", fileName);
+      let obj = new TailorColRef(req.body);
+      obj.save()
+        .then((doc) => resp.status(200).json({ status: true, msg: "Profile Saved", doc: doc }))
+        .catch((err) => resp.status(200).json({ status: false, msg: err.message }));
 
-            req.files.aadharcard.mv(uploadsFolderPath);
+    }).catch((err) => resp.status(200).json({ status: false, msg: err.message }));
 
-            aadharPromise = cloudinary.uploader.upload(uploadsFolderPath).then(function (aadharUrlResult) {
-                return aadharUrlResult.url;
-            });
-        }
-
-        // Wait for BOTH uploads to finish before saving to DB
-        Promise.all([picPromise, aadharPromise]).then(function (results) {
-            req.body.profilepic = results[0];
-            req.body.aadharcard = results[1];
-
-            let obj = new TailorColRef(req.body);
-
-            obj.save().then((doc) => {
-                resp.status(200).json({ status: true, msg: "Profile Saved", doc: doc });
-            }).catch((err) => {
-                resp.status(200).json({ status: false, msg: err.message });
-            });
-
-        }).catch(function (err) {
-            resp.status(200).json({ status: false, msg: err.message });
-        });
-
-    }).catch((err) => {
-        resp.status(200).json({ status: false, msg: err.message });
-    });
+  }).catch((err) => resp.status(200).json({ status: false, msg: err.message }));
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// UPDATE PROFILE
-// ─────────────────────────────────────────────────────────────
-
+// ── UPDATE PROFILE ──────────────────────────────────────
 function doUpdateProfile(req, resp) {
 
-    let updateData = req.body;
+  let updateData = req.body;
 
-    let picPromise = Promise.resolve();
-    if (req.files && req.files.profilepic) {
-        let fileName = req.files.profilepic.name;
-        let uploadsFolderPath = path.join(__dirname, "..", "uploads", fileName);
+  //  Upload directly from /tmp
+  let picPromise = Promise.resolve();
+  if (req.files && req.files.profilepic) {
+    picPromise = cloudinary.uploader.upload(req.files.profilepic.tempFilePath, {
+      resource_type: "auto",
+      folder: "tailor-profiles",
+    }).then((r) => { updateData.profilepic = r.secure_url; });
+  }
 
-        req.files.profilepic.mv(uploadsFolderPath);
+  let aadharPromise = Promise.resolve();
+  if (req.files && req.files.aadharcard) {
+    aadharPromise = cloudinary.uploader.upload(req.files.aadharcard.tempFilePath, {
+      resource_type: "auto",
+      folder: "tailor-aadhar",
+    }).then((r) => { updateData.aadharcard = r.secure_url; });
+  }
 
-        picPromise = cloudinary.uploader.upload(uploadsFolderPath).then(function (picUrlResult) {
-            updateData.profilepic = picUrlResult.url;
-        });
-    }
+  Promise.all([picPromise, aadharPromise]).then(() => {
 
-    let aadharPromise = Promise.resolve();
-    if (req.files && req.files.aadharcard) {
-        let fileName = req.files.aadharcard.name;
-        let uploadsFolderPath = path.join(__dirname, "..", "uploads", fileName);
+    TailorColRef.findOneAndUpdate(
+      { emailid: req.body.emailid },
+      { $set: updateData },
+      { new: true }
+    ).then((doc) => {
+      if (doc != null)
+        resp.status(200).json({ status: true, msg: "Profile Updated", doc: doc });
+      else
+        resp.status(200).json({ status: false, msg: "Profile Not Found" });
+    }).catch((err) => resp.status(200).json({ status: false, msg: err.message }));
 
-        req.files.aadharcard.mv(uploadsFolderPath);
-
-        aadharPromise = cloudinary.uploader.upload(uploadsFolderPath).then(function (aadharUrlResult) {
-            updateData.aadharcard = aadharUrlResult.url;
-        });
-    }
-
-    // Wait for potential uploads to finish before updating DB
-    Promise.all([picPromise, aadharPromise]).then(function () {
-
-        TailorColRef.findOneAndUpdate(
-            { emailid: req.body.emailid },
-            { $set: updateData },
-            { new: true }
-        ).then((doc) => {
-
-            if (doc != null)
-                resp.status(200).json({ status: true, msg: "Profile Updated", doc: doc });
-            else
-                resp.status(200).json({ status: false, msg: "Profile Not Found" });
-
-        }).catch((err) => {
-            resp.status(200).json({ status: false, msg: err.message });
-        });
-
-    }).catch(function (err) {
-        resp.status(200).json({ status: false, msg: err.message });
-    });
+  }).catch((err) => resp.status(200).json({ status: false, msg: err.message }));
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// FIND TAILOR
-// ─────────────────────────────────────────────────────────────
-
+// ── FIND TAILOR ─────────────────────────────────────────
 function doFindTailor(req, resp) {
-
-    TailorColRef.findOne({ emailid: req.body.emailid }).then((doc) => {
-
-        if (doc != null)
-            resp.status(200).json({ status: true, doc: doc });
-        else
-            resp.status(200).json({ status: false, msg: "No Profile Found" });
-
-    }).catch((err) => {
-        resp.status(200).json({ status: false, msg: err.message });
-    });
+  TailorColRef.findOne({ emailid: req.body.emailid })
+    .then((doc) => {
+      if (doc != null)
+        resp.status(200).json({ status: true, doc: doc });
+      else
+        resp.status(200).json({ status: false, msg: "No Profile Found" });
+    })
+    .catch((err) => resp.status(200).json({ status: false, msg: err.message }));
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// LIST TAILORS
-// ─────────────────────────────────────────────────────────────
-
+// ── LIST TAILORS ────────────────────────────────────────
 function doListTailors(req, resp) {
+  let filter = {};
+  if (req.query.city)     filter.city     = new RegExp(req.query.city, "i");
+  if (req.query.category) filter.category = req.query.category;
+  if (req.query.worktype) filter.worktype = req.query.worktype;
 
-    let filter = {};
-
-    if (req.query.city)
-        filter.city = new RegExp(req.query.city, "i");
-
-    if (req.query.category)
-        filter.category = req.query.category;
-
-    if (req.query.worktype)
-        filter.worktype = req.query.worktype;
-
-    TailorColRef.find(filter).sort({ createdAt: -1 }).then((docs) => {
-        resp.status(200).json({ status: true, docs: docs });
-    }).catch((err) => {
-        resp.status(200).json({ status: false, msg: err.message });
-    });
+  TailorColRef.find(filter).sort({ createdAt: -1 })
+    .then((docs) => resp.status(200).json({ status: true, docs: docs }))
+    .catch((err) => resp.status(200).json({ status: false, msg: err.message }));
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// EXTRACT AADHAAR (OCR)
-// ─────────────────────────────────────────────────────────────
-
+// ── EXTRACT AADHAAR (OCR) ───────────────────────────────
 function doExtractAadhaar(req, resp) {
 
-    if (!req.files || !req.files.aadharcard) {
-        return resp.status(200).json({ status: false, msg: "No file uploaded" });
-    }
+  if (!req.files || !req.files.aadharcard)
+    return resp.status(200).json({ status: false, msg: "No file uploaded" });
 
-    let fileName = req.files.aadharcard.name;
-    let uploadsFolderPath = path.join(__dirname, "..", "uploads", fileName);
+  // Tesseract reads directly from /tmp — no mv() needed
+  const tempPath = req.files.aadharcard.tempFilePath;
 
-    // Wait for the file to move before running Tesseract
-    req.files.aadharcard.mv(uploadsFolderPath).then(function () {
+  Tesseract.recognize(tempPath, "eng").then((result) => {
+    let text = result.data.text;
 
-        Tesseract.recognize(uploadsFolderPath, "eng").then((result) => {
+    let aadhaarMatch = text.match(/\d{4}\s?\d{4}\s?\d{4}/);
+    let aadhaarno   = aadhaarMatch ? aadhaarMatch[0].replace(/\s/g, "") : "";
 
-            let text = result.data.text;
+    let dobMatch = text.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/);
+    let dob = "";
+    if (dobMatch) dob = `${dobMatch[3]}-${dobMatch[2]}-${dobMatch[1]}`;
 
-            let aadhaarMatch = text.match(/\d{4}\s?\d{4}\s?\d{4}/);
-            let aadhaarno = aadhaarMatch ? aadhaarMatch[0].replace(/\s/g, "") : "";
+    let gender = "";
+    if (/female/i.test(text))      gender = "Female";
+    else if (/male/i.test(text))   gender = "Male";
 
-            let dobMatch = text.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/);
-            let dob = "";
-            if (dobMatch)
-                dob = `${dobMatch[3]}-${dobMatch[2]}-${dobMatch[1]}`;
+    resp.status(200).json({ status: true, aadhaarno, dob, gender });
 
-            let gender = "";
-            if (/female/i.test(text)) gender = "Female";
-            else if (/male/i.test(text)) gender = "Male";
-
-            resp.status(200).json({ status: true, aadhaarno, dob, gender });
-
-        }).catch((err) => {
-            resp.status(200).json({ status: false, msg: err.message });
-        });
-
-    }).catch(function (err) {
-        resp.status(200).json({ status: false, msg: err.message });
-    });
+  }).catch((err) => resp.status(200).json({ status: false, msg: err.message }));
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// EXPORT
-// ─────────────────────────────────────────────────────────────
-
-module.exports = {
-    doSaveProfile,
-    doUpdateProfile,
-    doFindTailor,
-    doExtractAadhaar,
-    doListTailors
-};
+module.exports = { doSaveProfile, doUpdateProfile, doFindTailor, doExtractAadhaar, doListTailors };
